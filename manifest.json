@@ -1,0 +1,29 @@
+{
+  "name": "Scribe - Instant YouTube Transcripts",
+  "author": "Laurent Denoue",
+  "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "109.0",
+      "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}"
+    }
+  },
+  "version": "1.2.3",
+  "description": "Instant YouTube Transcripts with punctuations, paragraphs and chapters.",
+  "content_scripts": [
+    {
+      "matches": [ "https://*.youtube.com/*" ],
+      "js": ["scribe-content-script.js"],
+      "all_frames": false
+    }
+  ],
+  "sidebar_action": {
+    "default_panel": "sidepanel.html"
+  },
+  "background": { "scripts": [ "scribe-background.js" ]},
+  "permissions": ["tabs", "sidePanel", "storage"],
+  "action": {},
+	"icons": {
+   "128": "icon.png"
+  }
+}

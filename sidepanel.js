@@ -1,0 +1,101 @@
+browser.tabs.onActivated.addListener(async (activeInfo) => {
+  //alert(activeInfo)
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+  if (tabs && tabs.length > 0) {
+    const currentUrl = tabs[0].url
+    const videoId = isYoutube(currentUrl)
+    if (videoId) {
+      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+      scribeframe.style.display = 'block'
+    } else {
+      hide()
+    }
+  }
+});
+
+function hide() {
+  //scribeframe.style.display = 'none'
+  //msg.textContent = 'Not a YouTube page'
+  //scribeframe.src = 'welcome.html'
+  //chrome.runtime.sendMessage({error:'Not YouTube'});
+  window.close()
+}
+
+browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.url && tab.active && tab.windowId === (await browser.windows.getCurrent()).id) {
+    const videoId = isYoutube(changeInfo.url)
+    /*if (!videoId)
+      window.close()
+    else
+      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId*/
+    if (videoId) {
+      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+      scribeframe.style.display = 'block'
+    } else {
+      hide()
+    }
+  }
+});
+
+function isYoutube(urlString) {
+  const url = new URL(urlString);
+  const videoId = url.searchParams.get("v");
+  if (url.origin.indexOf('.youtube.') !== -1 && videoId > '')
+    return videoId
+  return false
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+  if (tabs && tabs.length > 0) {
+    const currentUrl = tabs[0].url
+    const videoId = isYoutube(currentUrl)
+    if (videoId) {
+      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+      scribeframe.style.display = 'block'
+    } else {
+      hide()
+    }
+  }
+  //const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  //alert(tabs.length)
+  /*const u = window.location.href
+  const url = new URL(u)
+  const search = url.search
+  let videoId = search.substring(3)
+  if (videoId)
+    scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+  else
+    window.close()*/
+});
+
+window.addEventListener("message", (event) => {
+  if (!event.data || event.data.source !== 'FROM_IFRAME') return;
+  if (event.data.type === 'copy') {
+    try {
+      navigator.clipboard.writeText(event.data.text);
+    } catch (e) {
+    }
+  } else if (event.data.type === 'print') {
+    try {
+      const html = event.data.html
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+        printWindow.close();
+      };
+    } catch (e) {
+      console.log('error print',e)
+    }
+  } else {
+    chrome.runtime.sendMessage(event.data);
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.timeupdate !== undefined && message.id) {
+    scribeframe.contentWindow.postMessage({ type: "FROM_PAGE", id: message.id, timeupdate: message.timeupdate }, '*')
+  }
+});
