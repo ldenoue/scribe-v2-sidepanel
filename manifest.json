@@ -8,12 +8,23 @@
       "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}"
     }
   },
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Instant YouTube Transcripts with punctuations, paragraphs and chapters.",
   "content_scripts": [
     {
       "matches": [ "https://*.youtube.com/*" ],
       "js": ["scribe-content-script.js"],
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://appblit.com/scribe*",
+        "https://www.appblit.com/scribe*",
+        "http://localhost/scribe*",
+        "http://127.0.0.1/scribe*"
+      ],
+      "js": ["scribe-appblit-bridge.js"],
+      "run_at": "document_start",
       "all_frames": false
     }
   ],
@@ -21,6 +32,7 @@
     "default_panel": "sidepanel.html"
   },
   "background": { "scripts": [ "scribe-background.js" ]},
+  "host_permissions": ["https://www.youtube.com/*"],
   "permissions": ["tabs", "sidePanel", "storage"],
   "action": {},
 	"icons": {

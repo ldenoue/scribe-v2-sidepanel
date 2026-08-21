@@ -48,7 +48,12 @@ function checkVideo() {
     checkVideo()
   }
   video.ontimeupdate = () => {
-    videoId = new URL(window.location.href).searchParams.get('v')
+    const url = new URL(window.location.href)
+    videoId = url.searchParams.get('v')
+    if (!videoId && (url.pathname.indexOf('/shorts/') === 0 ||
+        url.pathname.indexOf('/embed/') === 0 ||
+        url.pathname.indexOf('/live/') === 0))
+      videoId = url.pathname.split('/').pop()
     const skipAd = document.querySelector('.ytp-skip-ad')
     if (skipAd) {
       return

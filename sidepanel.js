@@ -39,7 +39,11 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 function isYoutube(urlString) {
   const url = new URL(urlString);
-  const videoId = url.searchParams.get("v");
+  let videoId = url.searchParams.get("v");
+  if (!videoId && (url.pathname.indexOf('/shorts/') === 0 ||
+      url.pathname.indexOf('/embed/') === 0 ||
+      url.pathname.indexOf('/live/') === 0))
+    videoId = url.pathname.split('/').pop()
   if (url.origin.indexOf('.youtube.') !== -1 && videoId > '')
     return videoId
   return false
