@@ -25,6 +25,12 @@ const YOUTUBE_CLIENTS = {
 };
 
 function isAllowedAppblitSender(sender) {
+  if (!sender.tab && typeof sender.url === 'string') {
+    const sidepanelUrl = new URL(sender.url);
+    if (sidepanelUrl.origin === new URL(browser.runtime.getURL('/')).origin &&
+        sidepanelUrl.pathname === '/sidepanel.html')
+      return true;
+  }
   if (!sender.tab || sender.frameId !== 0 || typeof sender.url !== 'string')
     return false;
   try {

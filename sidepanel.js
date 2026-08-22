@@ -1,3 +1,5 @@
+const server = "https://www.appblit.com/scribe?v="
+//const server = "http://localhost:8081/scribe?v="
 browser.tabs.onActivated.addListener(async (activeInfo) => {
   //alert(activeInfo)
   const tabs = await browser.tabs.query({ active: true, currentWindow: true })
@@ -5,7 +7,7 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
     const currentUrl = tabs[0].url
     const videoId = isYoutube(currentUrl)
     if (videoId) {
-      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+      scribeframe.src= server + videoId
       scribeframe.style.display = 'block'
     } else {
       hide()
@@ -24,12 +26,8 @@ function hide() {
 browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.url && tab.active && tab.windowId === (await browser.windows.getCurrent()).id) {
     const videoId = isYoutube(changeInfo.url)
-    /*if (!videoId)
-      window.close()
-    else
-      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId*/
     if (videoId) {
-      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+      scribeframe.src= server + videoId
       scribeframe.style.display = 'block'
     } else {
       hide()
@@ -55,26 +53,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     const currentUrl = tabs[0].url
     const videoId = isYoutube(currentUrl)
     if (videoId) {
-      scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
+      scribeframe.src= server + videoId
       scribeframe.style.display = 'block'
     } else {
       hide()
     }
   }
-  //const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  //alert(tabs.length)
-  /*const u = window.location.href
-  const url = new URL(u)
-  const search = url.search
-  let videoId = search.substring(3)
-  if (videoId)
-    scribeframe.src= "https://www.appblit.com/scribe?v=" + videoId
-  else
-    window.close()*/
 });
 
 window.addEventListener("message", (event) => {
-  if (!event.data || event.data.source !== 'FROM_IFRAME') return;
+  if (event.source !== scribeframe.contentWindow || !event.data || event.data.source !== 'FROM_IFRAME') return;
+  if (event.data.type === 'SCRIBE_YOUTUBE_PLAYER_REQUEST') {
+    browser.runtime.sendMessage(event.data).then(response => {
+      scribeframe.contentWindow.postMessage({
+        type: 'SCRIBE_YOUTUBE_PLAYER_RESPONSE',
+        requestId: event.data.requestId,
+        ...response,
+      }, event.origin)
+    })
+    return
+  }
   if (event.data.type === 'copy') {
     try {
       navigator.clipboard.writeText(event.data.text);
