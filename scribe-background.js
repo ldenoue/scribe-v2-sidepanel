@@ -1,4 +1,5 @@
 const SCRIBE_YOUTUBE_PLAYER_REQUEST = 'SCRIBE_YOUTUBE_PLAYER_REQUEST';
+const SCRIBE_YOUTUBE_SEARCH_REQUEST = 'SCRIBE_YOUTUBE_SEARCH_REQUEST';
 const YOUTUBE_PLAYER_MAX_BODY_BYTES = 100_000;
 const YOUTUBE_PLAYER_TIMEOUT_MS = 15_000;
 const YOUTUBE_CLIENTS = {
@@ -104,6 +105,35 @@ async function fetchYoutubePlayer(payload) {
   }
 }
 
+async function fetchYoutubeSearch(query) {
+  if (typeof query !== 'string' || query.trim().length < 1 || query.length > 500)
+    return { ok: false, status: 400, error: 'Invalid YouTube search query' };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), YOUTUBE_PLAYER_TIMEOUT_MS);
+  try {
+    const response = await fetch(
+      `https://www.youtube.com/results?search_query=${encodeURIComponent(query.trim())}`,
+      { signal: controller.signal }
+    );
+    return {
+      ok: response.ok,
+      status: response.status,
+      payload: await response.text(),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 502,
+      error: error && error.name === 'AbortError'
+        ? 'YouTube search timed out'
+        : 'YouTube search failed',
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function showWelcomeMessage() {
   try {
     const welcomeShown = await browser.storage.local.get("welcomeShown");
@@ -125,6 +155,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return;
     }
     fetchYoutubePlayer(message.payload).then(sendResponse);
+    return true;
+  }
+
+  if (message.type === SCRIBE_YOUTUBE_SEARCH_REQUEST) {
+    if (!isAllowedAppblitSender(sender)) {
+      sendResponse({ ok: false, status: 403, error: 'Forbidden' });
+      return;
+    }
+    fetchYoutubeSearch(message.query).then(sendResponse);
     return true;
   }
 
