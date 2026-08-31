@@ -8,7 +8,7 @@
       "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}"
     }
   },
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Instant YouTube Transcripts with punctuations, paragraphs and chapters.",
   "content_scripts": [
     {

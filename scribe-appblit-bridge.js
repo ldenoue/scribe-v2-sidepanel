@@ -20,6 +20,7 @@ window.addEventListener('message', (event) => {
     requestId,
     payload: message.payload,
     query: message.query,
+    params: message.params,
   }, (response) => {
     const responseType = message.type === SCRIBE_YOUTUBE_SEARCH_REQUEST
       ? SCRIBE_YOUTUBE_SEARCH_RESPONSE

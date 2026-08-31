@@ -105,15 +105,17 @@ async function fetchYoutubePlayer(payload) {
   }
 }
 
-async function fetchYoutubeSearch(query) {
+async function fetchYoutubeSearch(query, params = null) {
   if (typeof query !== 'string' || query.trim().length < 1 || query.length > 500)
     return { ok: false, status: 400, error: 'Invalid YouTube search query' };
+  if (params !== null && (typeof params !== 'string' || params.length > 500))
+    return { ok: false, status: 400, error: 'Invalid YouTube search filter' };
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), YOUTUBE_PLAYER_TIMEOUT_MS);
   try {
     const response = await fetch(
-      `https://www.youtube.com/results?search_query=${encodeURIComponent(query.trim())}`,
+      `https://www.youtube.com/results?search_query=${encodeURIComponent(query.trim())}${params ? `&sp=${encodeURIComponent(params)}` : ''}`,
       { signal: controller.signal }
     );
     return {
@@ -163,7 +165,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ ok: false, status: 403, error: 'Forbidden' });
       return;
     }
-    fetchYoutubeSearch(message.query).then(sendResponse);
+    fetchYoutubeSearch(message.query, message.params).then(sendResponse);
     return true;
   }
 
