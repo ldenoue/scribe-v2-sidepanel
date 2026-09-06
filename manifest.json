@@ -8,7 +8,7 @@
       "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}"
     }
   },
-  "version": "1.2.9",
+  "version": "1.2.11",
   "description": "Instant YouTube Transcripts with punctuations, paragraphs and chapters.",
   "content_scripts": [
     {
@@ -18,10 +18,10 @@
     },
     {
       "matches": [
-        "https://appblit.com/scribe*",
-        "https://www.appblit.com/scribe*",
-        "http://localhost/scribe*",
-        "http://127.0.0.1/scribe*"
+        "https://appblit.com/*",
+        "https://www.appblit.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
       ],
       "js": ["scribe-appblit-bridge.js"],
       "run_at": "document_start",

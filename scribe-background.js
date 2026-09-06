@@ -25,27 +25,6 @@ const YOUTUBE_CLIENTS = {
   },
 };
 
-function isAllowedAppblitSender(sender) {
-  if (!sender.tab && typeof sender.url === 'string') {
-    const sidepanelUrl = new URL(sender.url);
-    if (sidepanelUrl.origin === new URL(browser.runtime.getURL('/')).origin &&
-        sidepanelUrl.pathname === '/sidepanel.html')
-      return true;
-  }
-  if (!sender.tab || sender.frameId !== 0 || typeof sender.url !== 'string')
-    return false;
-  try {
-    const url = new URL(sender.url);
-    const isProduction = url.protocol === 'https:' &&
-      (url.hostname === 'appblit.com' || url.hostname === 'www.appblit.com');
-    const isLocal = url.protocol === 'http:' &&
-      (url.hostname === 'localhost' || url.hostname === '127.0.0.1');
-    return (isProduction || isLocal) && url.pathname.startsWith('/scribe');
-  } catch {
-    return false;
-  }
-}
-
 async function fetchYoutubePlayer(payload) {
   let body;
   try {
@@ -152,19 +131,11 @@ browser.runtime.onInstalled.addListener(showWelcomeMessage);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === SCRIBE_YOUTUBE_PLAYER_REQUEST) {
-    if (!isAllowedAppblitSender(sender)) {
-      sendResponse({ ok: false, status: 403, error: 'Forbidden' });
-      return;
-    }
     fetchYoutubePlayer(message.payload).then(sendResponse);
     return true;
   }
 
   if (message.type === SCRIBE_YOUTUBE_SEARCH_REQUEST) {
-    if (!isAllowedAppblitSender(sender)) {
-      sendResponse({ ok: false, status: 403, error: 'Forbidden' });
-      return;
-    }
     fetchYoutubeSearch(message.query, message.params).then(sendResponse);
     return true;
   }
