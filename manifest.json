@@ -1,5 +1,5 @@
 {
-  "name": "Scribe - Instant YouTube Transcripts",
+  "name": "QuickScribe - Instant YouTube Transcripts",
   "author": "Laurent Denoue",
   "manifest_version": 3,
   "browser_specific_settings": {
@@ -8,7 +8,7 @@
       "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}"
     }
   },
-  "version": "1.2.11",
+  "version": "1.2.12",
   "description": "Instant YouTube Transcripts with punctuations, paragraphs and chapters.",
   "content_scripts": [
     {

@@ -31,7 +31,7 @@ window.addEventListener('message', (event) => {
         requestId,
         ok: false,
         status: 0,
-        error: 'The Scribe extension could not handle the request',
+        error: 'The QuickScribe extension could not handle the request',
       }, window.location.origin)
       return
     }
