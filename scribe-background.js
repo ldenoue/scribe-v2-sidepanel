@@ -1,5 +1,6 @@
 const SCRIBE_YOUTUBE_PLAYER_REQUEST = 'SCRIBE_YOUTUBE_PLAYER_REQUEST';
 const SCRIBE_YOUTUBE_SEARCH_REQUEST = 'SCRIBE_YOUTUBE_SEARCH_REQUEST';
+const SCRIBE_FETCH_REQUEST = 'SCRIBE_FETCH_REQUEST';
 const YOUTUBE_PLAYER_MAX_BODY_BYTES = 100_000;
 const YOUTUBE_PLAYER_TIMEOUT_MS = 15_000;
 const YOUTUBE_CLIENTS = {
@@ -24,6 +25,29 @@ const YOUTUBE_CLIENTS = {
     userAgent: 'com.google.android.apps.youtube.vr.oculus/1.62.20 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip',
   },
 };
+
+async function proxyFetch(url, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), YOUTUBE_PLAYER_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+      body: await response.text(),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      error: error && error.name === 'AbortError' ? 'Fetch timed out' : 'Fetch failed',
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 async function fetchYoutubePlayer(payload) {
   let body;
@@ -130,6 +154,10 @@ async function showWelcomeMessage() {
 browser.runtime.onInstalled.addListener(showWelcomeMessage);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === SCRIBE_FETCH_REQUEST) {
+    proxyFetch(message.url, message.options).then(sendResponse);
+    return true;
+  }
   if (message.type === SCRIBE_YOUTUBE_PLAYER_REQUEST) {
     fetchYoutubePlayer(message.payload).then(sendResponse);
     return true;

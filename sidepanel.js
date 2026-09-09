@@ -64,9 +64,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 window.addEventListener("message", (event) => {
   if (event.source !== scribeframe.contentWindow || !event.data || event.data.source !== 'FROM_IFRAME') return;
   if (event.data.type === 'SCRIBE_YOUTUBE_PLAYER_REQUEST' ||
-      event.data.type === 'SCRIBE_YOUTUBE_SEARCH_REQUEST') {
+      event.data.type === 'SCRIBE_YOUTUBE_SEARCH_REQUEST' ||
+      event.data.type === 'SCRIBE_FETCH_REQUEST') {
     browser.runtime.sendMessage(event.data).then(response => {
-      const responseType = event.data.type === 'SCRIBE_YOUTUBE_SEARCH_REQUEST'
+      const responseType = event.data.type === 'SCRIBE_FETCH_REQUEST'
+        ? 'SCRIBE_FETCH_RESPONSE'
+        : event.data.type === 'SCRIBE_YOUTUBE_SEARCH_REQUEST'
         ? 'SCRIBE_YOUTUBE_SEARCH_RESPONSE'
         : 'SCRIBE_YOUTUBE_PLAYER_RESPONSE'
       scribeframe.contentWindow.postMessage({
