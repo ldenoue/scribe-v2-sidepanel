@@ -5,10 +5,13 @@
   "browser_specific_settings": {
     "gecko": {
       "strict_min_version": "109.0",
-      "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}"
+      "id": "{BFF66835-CD42-4DB8-88B9-94518A8423A7}",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "Instant YouTube Transcripts with punctuations, paragraphs and chapters.",
   "content_scripts": [
     {
@@ -33,7 +36,7 @@
   },
   "background": { "scripts": [ "scribe-background.js" ]},
   "host_permissions": ["https://www.youtube.com/*"],
-  "permissions": ["tabs", "sidePanel", "storage"],
+  "permissions": ["tabs", "storage", "webRequest", "webRequestBlocking"],
   "action": {},
 	"icons": {
    "128": "icon.png"

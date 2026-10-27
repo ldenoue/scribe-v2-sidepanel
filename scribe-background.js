@@ -3,6 +3,8 @@ const SCRIBE_YOUTUBE_SEARCH_REQUEST = 'SCRIBE_YOUTUBE_SEARCH_REQUEST';
 const SCRIBE_FETCH_REQUEST = 'SCRIBE_FETCH_REQUEST';
 const YOUTUBE_PLAYER_MAX_BODY_BYTES = 100_000;
 const YOUTUBE_PLAYER_TIMEOUT_MS = 15_000;
+const YOUTUBE_PLAYER_URLS = ['https://www.youtube.com/youtubei/v1/player*'];
+const EXTENSION_ORIGIN = new URL(browser.runtime.getURL('')).origin;
 const YOUTUBE_CLIENTS = {
   WEB: {
     headerName: '1',
@@ -25,6 +27,37 @@ const YOUTUBE_CLIENTS = {
     userAgent: 'com.google.android.apps.youtube.vr.oculus/1.62.20 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip',
   },
 };
+
+// Firefox always supplies the extension's moz-extension:// origin for a
+// cross-origin fetch and ignores an Origin header passed to fetch(). YouTube
+// rejects that origin with HTTP 403. Restrict the rewrite to the one endpoint
+// proxied for QuickScribe so other extension traffic keeps its real origin.
+function rewriteYouTubePlayerOrigin(details) {
+  let requestOrigin;
+  try {
+    requestOrigin = new URL(details.originUrl).origin;
+  } catch {
+    return {};
+  }
+  if (details.method !== 'POST' || requestOrigin !== EXTENSION_ORIGIN)
+    return {};
+
+  const requestHeaders = details.requestHeaders || [];
+  const originHeader = requestHeaders.find(
+    header => header.name.toLowerCase() === 'origin'
+  );
+  if (originHeader)
+    originHeader.value = 'https://www.youtube.com';
+  else
+    requestHeaders.push({ name: 'Origin', value: 'https://www.youtube.com' });
+  return { requestHeaders };
+}
+
+browser.webRequest.onBeforeSendHeaders.addListener(
+  rewriteYouTubePlayerOrigin,
+  { urls: YOUTUBE_PLAYER_URLS, types: ['xmlhttprequest'] },
+  ['blocking', 'requestHeaders']
+);
 
 async function proxyFetch(url, options = {}) {
   const controller = new AbortController();
